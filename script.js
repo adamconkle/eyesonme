@@ -15,6 +15,8 @@ faceMesh.setOptions({
 
 faceMesh.onResults(results => {
   canvasCtx.save();
+  canvasCtx.scale(-1, 1);
+  canvasCtx.translate(-canvasElement.width, 0); // mirror horizontally
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
   let gazeX = '';
