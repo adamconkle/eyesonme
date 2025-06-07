@@ -57,8 +57,8 @@ faceMesh.onResults(results => {
     else gazeX = 'Center';
 
     // --- Vertical direction ---
-    if (avgY < 0.35) gazeY = 'Up';
-    else if (avgY > 0.65) gazeY = 'Down';
+    if (avgY < 0.35) gazeY = 'Down';
+    else if (avgY > 0.65) gazeY = 'Up';
     else gazeY = 'Center';
 
     // --- Draw landmark dots ---
@@ -66,7 +66,7 @@ faceMesh.onResults(results => {
       const x = landmarks[i].x * canvasElement.width;
       const y = landmarks[i].y * canvasElement.height;
       canvasCtx.beginPath();
-      canvasCtx.arc(x, y, 4, 0, 2 * Math.PI);
+      canvasCtx.arc(x, y, 2, 0, 2 * Math.PI);
       canvasCtx.fillStyle = 'cyan';
       canvasCtx.fill();
     });
