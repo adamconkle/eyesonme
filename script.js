@@ -17,37 +17,52 @@ faceMesh.onResults(results => {
   canvasCtx.save();
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
-  let gazeDirection = '';
+  let gazeX = '';
+  let gazeY = '';
 
   if (results.multiFaceLandmarks.length > 0) {
     const landmarks = results.multiFaceLandmarks[0];
 
-    // --- Left Eye ---
+    // --- Left Eye (horizontal) ---
     const leftEyeLeft = landmarks[33];
     const leftEyeRight = landmarks[133];
+    const leftEyeTop = landmarks[159];
+    const leftEyeBottom = landmarks[145];
     const leftIris = landmarks[468];
 
-    const leftEyeWidth = leftEyeRight.x - leftEyeLeft.x;
-    const leftIrisOffset = (leftIris.x - leftEyeLeft.x) / leftEyeWidth;
+    const leftWidth = leftEyeRight.x - leftEyeLeft.x;
+    const leftHeight = leftEyeBottom.y - leftEyeTop.y;
+    const leftIrisXOffset = (leftIris.x - leftEyeLeft.x) / leftWidth;
+    const leftIrisYOffset = (leftIris.y - leftEyeTop.y) / leftHeight;
 
-    // --- Right Eye ---
+    // --- Right Eye (horizontal) ---
     const rightEyeLeft = landmarks[362];
     const rightEyeRight = landmarks[263];
+    const rightEyeTop = landmarks[386];
+    const rightEyeBottom = landmarks[374];
     const rightIris = landmarks[473];
 
-    const rightEyeWidth = rightEyeRight.x - rightEyeLeft.x;
-    const rightIrisOffset = (rightIris.x - rightEyeLeft.x) / rightEyeWidth;
+    const rightWidth = rightEyeRight.x - rightEyeLeft.x;
+    const rightHeight = rightEyeBottom.y - rightEyeTop.y;
+    const rightIrisXOffset = (rightIris.x - rightEyeLeft.x) / rightWidth;
+    const rightIrisYOffset = (rightIris.y - rightEyeTop.y) / rightHeight;
 
-    // Average both eyes
-    const avgIrisOffset = (leftIrisOffset + rightIrisOffset) / 2;
+    // --- Averaged iris offsets ---
+    const avgX = (leftIrisXOffset + rightIrisXOffset) / 2;
+    const avgY = (leftIrisYOffset + rightIrisYOffset) / 2;
 
-    // --- Determine direction ---
-    if (avgIrisOffset < 0.35) gazeDirection = 'Looking Left';
-    else if (avgIrisOffset > 0.65) gazeDirection = 'Looking Right';
-    else gazeDirection = 'Looking Center';
+    // --- Horizontal direction ---
+    if (avgX < 0.35) gazeX = 'Left';
+    else if (avgX > 0.65) gazeX = 'Right';
+    else gazeX = 'Center';
 
-    // Draw key points
-    [33, 133, 362, 263, 468, 473].forEach(i => {
+    // --- Vertical direction ---
+    if (avgY < 0.35) gazeY = 'Up';
+    else if (avgY > 0.65) gazeY = 'Down';
+    else gazeY = 'Center';
+
+    // --- Draw landmark dots ---
+    [33, 133, 362, 263, 468, 473, 159, 145, 386, 374].forEach(i => {
       const x = landmarks[i].x * canvasElement.width;
       const y = landmarks[i].y * canvasElement.height;
       canvasCtx.beginPath();
@@ -56,14 +71,15 @@ faceMesh.onResults(results => {
       canvasCtx.fill();
     });
 
-    // Draw gaze direction text
+    // --- Display text ---
     canvasCtx.font = '24px Arial';
     canvasCtx.fillStyle = 'lime';
-    canvasCtx.fillText(gazeDirection, 20, 30);
+    canvasCtx.fillText(`Gaze: ${gazeX} / ${gazeY}`, 20, 30);
   }
 
   canvasCtx.restore();
 });
+
 
 
 // Setup webcam stream
