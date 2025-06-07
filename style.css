@@ -15,3 +15,7 @@ video, canvas {
   max-width: 90vw;
   max-height: 90vh;
 }
+
+video {
+  transform: scaleX(-1); /* Flip horizontally */
+}
