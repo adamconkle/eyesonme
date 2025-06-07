@@ -1,9 +1,9 @@
 # eyesonme
 
-<h1>What it does...</h1>
+<h3>What it does...</h3>
 <p>This app will track eye movement.</p>
 
-<h1>What's the purpose?</h1>
+<h3>What's the purpose?</h3>
 <ul>
   <li>Improve eye contact for people who struggle with keeping eye contact</li>
   <li>"Loser looks away first" game</li>
