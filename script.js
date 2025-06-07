@@ -15,8 +15,8 @@ faceMesh.setOptions({
 
 faceMesh.onResults(results => {
   canvasCtx.save();
-  canvasCtx.scale(-1, 1);
-  canvasCtx.translate(-canvasElement.width, 0); // mirror horizontally
+  canvasCtx.scale(-1, 1); // Flip canvas to match flipped video
+  canvasCtx.translate(-canvasElement.width, 0);
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
   let gazeX = '';
@@ -25,7 +25,7 @@ faceMesh.onResults(results => {
   if (results.multiFaceLandmarks.length > 0) {
     const landmarks = results.multiFaceLandmarks[0];
 
-    // --- Left Eye (horizontal) ---
+    // --- Left Eye ---
     const leftEyeLeft = landmarks[33];
     const leftEyeRight = landmarks[133];
     const leftEyeTop = landmarks[159];
@@ -37,7 +37,7 @@ faceMesh.onResults(results => {
     const leftIrisXOffset = (leftIris.x - leftEyeLeft.x) / leftWidth;
     const leftIrisYOffset = (leftIris.y - leftEyeTop.y) / leftHeight;
 
-    // --- Right Eye (horizontal) ---
+    // --- Right Eye ---
     const rightEyeLeft = landmarks[362];
     const rightEyeRight = landmarks[263];
     const rightEyeTop = landmarks[386];
@@ -49,21 +49,19 @@ faceMesh.onResults(results => {
     const rightIrisXOffset = (rightIris.x - rightEyeLeft.x) / rightWidth;
     const rightIrisYOffset = (rightIris.y - rightEyeTop.y) / rightHeight;
 
-    // --- Averaged iris offsets ---
     const avgX = (leftIrisXOffset + rightIrisXOffset) / 2;
     const avgY = (leftIrisYOffset + rightIrisYOffset) / 2;
 
-    // --- Horizontal direction ---
+    // Gaze detection
     if (avgX < 0.35) gazeX = 'Left';
     else if (avgX > 0.65) gazeX = 'Right';
     else gazeX = 'Center';
 
-    // --- Vertical direction ---
     if (avgY < 0.35) gazeY = 'Up';
     else if (avgY > 0.65) gazeY = 'Down';
     else gazeY = 'Center';
 
-    // --- Draw landmark dots ---
+    // Draw key points
     [33, 133, 362, 263, 468, 473, 159, 145, 386, 374].forEach(i => {
       const x = landmarks[i].x * canvasElement.width;
       const y = landmarks[i].y * canvasElement.height;
@@ -73,7 +71,6 @@ faceMesh.onResults(results => {
       canvasCtx.fill();
     });
 
-    // --- Display text ---
     canvasCtx.font = '24px Arial';
     canvasCtx.fillStyle = 'lime';
     canvasCtx.fillText(`Gaze: ${gazeX} / ${gazeY}`, 20, 30);
@@ -82,9 +79,7 @@ faceMesh.onResults(results => {
   canvasCtx.restore();
 });
 
-
-
-// Setup webcam stream
+// Webcam + camera utility
 const camera = new Camera(videoElement, {
   onFrame: async () => {
     await faceMesh.send({ image: videoElement });
@@ -94,7 +89,7 @@ const camera = new Camera(videoElement, {
 });
 camera.start();
 
-// Resize canvas to match video
+// Sync canvas size with video
 videoElement.addEventListener('loadeddata', () => {
   canvasElement.width = videoElement.videoWidth;
   canvasElement.height = videoElement.videoHeight;
