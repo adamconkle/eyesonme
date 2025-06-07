@@ -6,16 +6,16 @@ body {
   color: white;
 }
 
+h1 {
+  margin-top: 10px;
+}
+
 video, canvas {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  border: 1px solid #555;
+  transform: translate(-50%, -50%) scaleX(-1); /* Flip horizontally */
   max-width: 90vw;
   max-height: 90vh;
-}
-
-video {
-  transform: scaleX(-1); /* Flip horizontally */
+  border: 1px solid #555;
 }
