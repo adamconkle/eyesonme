@@ -82,8 +82,8 @@ faceMesh.onResults(results => {
       else if (adjustedY > lowerY) gazeY = 'Down';
       else gazeY = 'Center';
 
-      if (adjustedX < leftX) gazeX = 'Left';
-      else if (adjustedX > rightX) gazeX = 'Right';
+      if (adjustedX < leftX) gazeX = 'Right';
+      else if (adjustedX > rightX) gazeX = 'Left';
       else gazeX = 'Center';
 
       canvasCtx.font = '24px Arial';
@@ -129,37 +129,37 @@ videoElement.addEventListener('loadeddata', () => {
 // CALIBRATION PROCESS
 startBtn.addEventListener('click', async () => {
   calibrationMode = true;
-  startBtn.disabled = true;
+  startBtn.disabled = false;
 
   instruction.innerText = "Look UP and hold...";
   speak("Look up and hold.");
   calibrationStep = 1; upperSamples = [];
-  await delay(2000);
+  await delay(4000);
 
   instruction.innerText = "Look CENTER (vertical) and hold...";
   speak("Look center and hold.");
   calibrationStep = 2; centerYSamples = [];
-  await delay(2000);
+  await delay(4000);
 
   instruction.innerText = "Look DOWN and hold...";
   speak("Look down and hold.");
   calibrationStep = 3; lowerSamples = [];
-  await delay(2000);
+  await delay(4000);
 
   instruction.innerText = "Look LEFT and hold...";
   speak("Look left and hold.");
   calibrationStep = 4; leftSamples = [];
-  await delay(2000);
+  await delay(4000);
 
   instruction.innerText = "Look CENTER (horizontal) and hold...";
   speak("Look center and hold.");
   calibrationStep = 5; centerXSamples = [];
-  await delay(2000);
+  await delay(4000);
 
   instruction.innerText = "Look RIGHT and hold...";
   speak("Look right and hold.");
   calibrationStep = 6; rightSamples = [];
-  await delay(2000);
+  await delay(4000);
 
   calibrationStep = 0;
   calibrationMode = false;
@@ -193,6 +193,6 @@ function delay(ms) {
 }
 function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 1;
+  utterance.rate = .7;
   speechSynthesis.speak(utterance);
 }
