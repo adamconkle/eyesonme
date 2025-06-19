@@ -26,10 +26,12 @@ video, canvas {
 
 button#start-calibration {
   background-color: lime;
+  color: black;
   padding: 10px;
   border: none;
   border-radius: 1rem;
   font-size: 1rem;
+  transition: background-color .5s;
 }
 button#start-calibration:hover {
   background-color: green;
