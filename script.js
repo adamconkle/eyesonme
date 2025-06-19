@@ -129,7 +129,7 @@ videoElement.addEventListener('loadeddata', () => {
 // CALIBRATION PROCESS
 startBtn.addEventListener('click', async () => {
   calibrationMode = true;
-  startBtn.disabled = false;
+  startBtn.disabled = true;
 
   instruction.innerText = "Look UP and hold...";
   speak("Look up and hold.");
