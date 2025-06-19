@@ -34,6 +34,7 @@ faceMesh.setOptions({
   minTrackingConfidence: 0.5
 });
 
+// Main tracking
 faceMesh.onResults(results => {
   canvasCtx.save();
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
@@ -41,20 +42,17 @@ faceMesh.onResults(results => {
   if (results.multiFaceLandmarks.length > 0) {
     const landmarks = results.multiFaceLandmarks[0];
 
-    // Horizontal eye landmarks
     const leftIris = landmarks[468], rightIris = landmarks[473];
     const leftCorner = landmarks[33], rightCorner = landmarks[263];
     const leftTop = landmarks[159], leftBottom = landmarks[145];
     const rightTop = landmarks[386], rightBottom = landmarks[374];
 
-    // Calculate raw X/Y offsets
     const irisX = (leftIris.x + rightIris.x) / 2;
     const irisY_L = (leftIris.y - leftTop.y) / (leftBottom.y - leftTop.y);
     const irisY_R = (rightIris.y - rightTop.y) / (rightBottom.y - rightTop.y);
     const rawX = (irisX - leftCorner.x) / (rightCorner.x - leftCorner.x);
     const rawY = (irisY_L + irisY_R) / 2;
 
-    // Smooth input
     recentX.push(rawX);
     recentY.push(rawY);
     if (recentX.length > SMOOTHING_FRAMES) recentX.shift();
@@ -62,11 +60,9 @@ faceMesh.onResults(results => {
     const avgX = recentX.reduce((a, b) => a + b, 0) / recentX.length;
     const avgY = recentY.reduce((a, b) => a + b, 0) / recentY.length;
 
-    // Velocity
     if (previousY !== null) velocityY = avgY - previousY;
     previousY = avgY;
 
-    // --- CALIBRATION PHASE ---
     if (calibrationMode) {
       if (calibrationStep === 1) upperSamples.push(avgY);
       if (calibrationStep === 2) centerYSamples.push(avgY);
@@ -76,28 +72,25 @@ faceMesh.onResults(results => {
       if (calibrationStep === 6) rightSamples.push(avgX);
     }
 
-    // --- LIVE GAZE MODE ---
-    let gazeX = "...", gazeY = "...";
     const adjustedY = (avgY - 0.5) * Y_GAIN + 0.5;
     const adjustedX = (avgX - 0.5) * X_GAIN + 0.5;
 
+    let gazeX = "...", gazeY = "...";
+
     if (!calibrationMode) {
-      // Vertical gaze
       if (adjustedY < upperY) gazeY = 'Up';
       else if (adjustedY > lowerY) gazeY = 'Down';
       else gazeY = 'Center';
 
-      // Horizontal gaze
       if (adjustedX < leftX) gazeX = 'Left';
       else if (adjustedX > rightX) gazeX = 'Right';
       else gazeX = 'Center';
 
-      // Text output
       canvasCtx.font = '24px Arial';
       canvasCtx.fillStyle = 'red';
       canvasCtx.fillText(`Gaze: ${gazeX} / ${gazeY}`, 20, 30);
 
-      // LIVE POSITION INDICATOR
+      // Gaze circle
       const circleX = adjustedX * canvasElement.width;
       const circleY = adjustedY * canvasElement.height;
       canvasCtx.beginPath();
@@ -120,7 +113,7 @@ faceMesh.onResults(results => {
   canvasCtx.restore();
 });
 
-// Camera
+// Camera setup
 const camera = new Camera(videoElement, {
   onFrame: async () => await faceMesh.send({ image: videoElement }),
   width: 640,
@@ -133,53 +126,47 @@ videoElement.addEventListener('loadeddata', () => {
   canvasElement.height = videoElement.videoHeight;
 });
 
-// Full Calibration Sequence
+// CALIBRATION PROCESS
 startBtn.addEventListener('click', async () => {
   calibrationMode = true;
   startBtn.disabled = true;
 
-  // 1. Look Up
   instruction.innerText = "Look UP and hold...";
-  calibrationStep = 1;
-  upperSamples = [];
+  speak("Look up and hold.");
+  calibrationStep = 1; upperSamples = [];
   await delay(2000);
 
-  // 2. Look Center (V)
   instruction.innerText = "Look CENTER (vertical) and hold...";
-  calibrationStep = 2;
-  centerYSamples = [];
+  speak("Look center and hold.");
+  calibrationStep = 2; centerYSamples = [];
   await delay(2000);
 
-  // 3. Look Down
   instruction.innerText = "Look DOWN and hold...";
-  calibrationStep = 3;
-  lowerSamples = [];
+  speak("Look down and hold.");
+  calibrationStep = 3; lowerSamples = [];
   await delay(2000);
 
-  // 4. Look LEFT
   instruction.innerText = "Look LEFT and hold...";
-  calibrationStep = 4;
-  leftSamples = [];
+  speak("Look left and hold.");
+  calibrationStep = 4; leftSamples = [];
   await delay(2000);
 
-  // 5. Look CENTER (H)
   instruction.innerText = "Look CENTER (horizontal) and hold...";
-  calibrationStep = 5;
-  centerXSamples = [];
+  speak("Look center and hold.");
+  calibrationStep = 5; centerXSamples = [];
   await delay(2000);
 
-  // 6. Look RIGHT
   instruction.innerText = "Look RIGHT and hold...";
-  calibrationStep = 6;
-  rightSamples = [];
+  speak("Look right and hold.");
+  calibrationStep = 6; rightSamples = [];
   await delay(2000);
 
-  // DONE
   calibrationStep = 0;
-  instruction.innerText = "Calibration complete!";
   calibrationMode = false;
+  instruction.innerText = "Calibration complete!";
+  speak("Calibration complete. Ready to track your eyes.");
 
-  // Calculate thresholds
+  // Apply calibrated thresholds
   const upAvg = average(upperSamples);
   const centerYAvg = average(centerYSamples);
   const downAvg = average(lowerSamples);
@@ -203,4 +190,9 @@ function average(arr) {
 }
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+function speak(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 1;
+  speechSynthesis.speak(utterance);
 }
